@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Fila de Trânsito</title>
+    <style>
+        /* Estilos opcionais para o dashboard */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #b6b4b4;
+        }
+        h1{
+            background-color: #ddd;
+            display: flex;
+            justify-content: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .status-verde {
+            background-color: #4CAF50; /* Verde */
+            color: white;
+        }
+
+        .status-amarelo {
+            background-color: #FFD700; /* Amarelo */
+        }
+
+        .status-vermelho {
+            background-color: #FF6347; /* Vermelho */
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>  Fila de Trânsito</h1>
+
+    <table id="transit-table">
+        <thead>
+            <tr>
+                <th>Res</th>
+                <th>Dia</th>
+                <th>Nome</th>
+                <th>Sobrenome</th>
+                <th>Hora</th>
+                <th>Data</th>
+                <th>Motivo</th>
+            </tr>
+        </thead>
+        <tbody id="transit-body">
+            <!-- Os itens da fila de trânsito serão inseridos aqui -->
+        </tbody>
+    </table>
+
+    <script>
+        // Função para fazer a solicitação AJAX para o endpoint e exibir os dados na tabela
+        function fetchTransitData() {
+            const endpoint = 'https://niloweb.com.br/transit-room/api/reg_endpoint_all.php';
+
+            // Faz a solicitação AJAX
+            fetch(endpoint)
+                .then(response => response.json())
+                .then(data => {
+                    const transitBody = document.getElementById('transit-body');
+
+                    // Limpa o corpo da tabela antes de adicionar novas linhas
+                    transitBody.innerHTML = '';
+
+                    // Verifica se há dados retornados
+                    if (data && data.length > 0) {
+                        data.forEach(item => {
+                            const row = document.createElement('tr');
+
+                            // Define a classe com base no status do trânsito
+                            let statusClass = '';
+                            switch (item.res) {
+                                case 'L':
+                                    statusClass = 'status-verde';
+                                    break;
+                                case 'A':
+                                    statusClass = 'status-amarelo';
+                                    break;
+                                case 'B':
+                                    statusClass = 'status-vermelho';
+                                    break;
+                                default:
+                                    statusClass = '';
+                            }
+
+                            row.innerHTML = `
+                                <td class="${statusClass}">${item.res}</td>
+                                <td>${item.dia}</td>
+                                <td>${item.nome}</td>
+                                <td>${item.sobrenome}</td>
+                                <td>${item.hora}</td>
+                                <td>${item.data}</td>
+                                <td>${item.motivo}</td>
+                            `;
+                            transitBody.appendChild(row);
+                        });
+                    } else {
+                        // Se não houver dados, exibe uma mensagem na tabela
+                        const row = document.createElement('tr');
+                        row.innerHTML = '<td colspan="7">Nenhum dado encontrado na fila de trânsito.</td>';
+                        transitBody.appendChild(row);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao obter dados da fila de trânsito:', error);
+                });
+        }
+
+        // Chama a função para buscar os dados quando a página é carregada
+        window.onload = fetchTransitData;
+    </script>
+</body>
+</html>
